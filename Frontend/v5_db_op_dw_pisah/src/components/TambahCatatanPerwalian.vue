@@ -321,6 +321,19 @@
 
             <div class="d-flex justify-content-center">
                 <div id="inputanMultiline" >
+
+                    <div id="opsiKirimNotifikasi" class="d-flex justify-content-end">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" :value="true" v-model="this.isKirimNotifikasi" id="flexCheckChecked" checked>
+                            <label class="form-check-label" for="flexCheckChecked">
+                              Kirim notifikasi ke peserta ?
+                            </label>
+                            <v-tooltip activator="parent" width="300" content-class="bg-grey-darken-1" location="bottom"> Sistem akan memberikan notifikasi ke peserta berupa isi dari catatan perwalian saat ini.
+                            </v-tooltip>
+                          </div>
+                    </div>
+
+
                     <div id="kolomInputan" class="d-flex justify-content-center">
                         <textarea name="agendaPerwalian" id="agendaPerwalian" cols="160" rows="10" placeholder="Tulis agenda perwalian di sini" v-model="agendaPerwalian"></textarea>
                     </div>
@@ -455,7 +468,8 @@ export default {
                 "Catatan Perwalian Pra-UAS"
             ],
             judul: null,
-            namaDosen: localStorage.getItem("namaDosen")
+            namaDosen: localStorage.getItem("namaDosen"),
+            isKirimNotifikasi : false
 
         }
     },
@@ -683,6 +697,52 @@ export default {
                                 }
                             }
                         }
+
+                        // kirim notifikasi ke peserta (mahasiswa YBS)
+                        if(this.isKirimNotifikasi == true && this.tipe != 'grup-angkatan'){
+                            // get kode semester mahasiswa YBS
+                            let kodeSemesterMahasiswa = ""
+                            try {
+                                const response = await axios.get(process.env.VUE_APP_API_DATAWAREHOUSE + `/getKodeSemesterMhs/`, {
+                                    params: {
+                                        nim: this.nimMahasiswa,
+                                    },
+                                });
+                            
+                                if (response.data.error === false) {
+                                    kodeSemesterMahasiswa= response.data.response[0].kode_semester;
+                                    console.log(kodeSemesterMahasiswa);
+                                } else {
+                                    kodeSemesterMahasiswa= null;
+                                }
+                            } catch (error) {
+                                console.error("Terjadi kesalahan saat mengambil data:", error);
+                                kodeSemesterMahasiswa = null;
+                            }
+
+                            // kirim catatan ke peserta YBS (terkait)
+                            try {
+                                const paramObjectKirim =  {
+                                        nama_mahasiswa: this.namaMahasiswa,
+                                        nim: this.nimMahasiswa,
+                                        semester: null, // sementara null 
+                                        kode_semester: kodeSemesterMahasiswa,
+                                        judul: this.judul,
+                                        pembahasan: this.agendaPerwalian,
+                                        file: []
+                                    }
+                                
+                                const response = await axios.post(`${process.env.VUE_APP_API_PERWALIAN}/dosen/${process.env.VUE_APP_UID_FIREBASE}/new-log`, paramObjectKirim);
+
+                                // console.log(paramObjectKirim);
+                                // console.log(response);
+
+                            } catch (error) {
+                                console.error("Terjadi kesalahan saat menambah data:", error);
+                                console.log(response.message);
+                            }
+                        }
+
 
                         this.pesanSnackBar = "Berhasil menambahkan catatan"
                         this.snackbar()

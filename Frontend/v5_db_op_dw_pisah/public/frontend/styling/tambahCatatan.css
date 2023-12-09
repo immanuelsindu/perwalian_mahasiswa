@@ -803,3 +803,8 @@ input[type=text]:disabled {
     border-radius: 0.3rem;
     padding: 0rem;
 }
+
+
+label.v-label {
+    margin-bottom: 0rem !important;
+}

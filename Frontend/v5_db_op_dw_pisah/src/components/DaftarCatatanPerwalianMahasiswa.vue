@@ -1065,7 +1065,7 @@ export default {
             } else {
                 this.relasiCatatanHapus = {
                     judul: "kosong",
-                    tambah_peserta: 0,
+                    tambah_peserta: [],
                 };
                 this.pesanWarningHapus =
                     "Catatan ini akan dihapus secara permanen dan tidak bisa dikembalikan";

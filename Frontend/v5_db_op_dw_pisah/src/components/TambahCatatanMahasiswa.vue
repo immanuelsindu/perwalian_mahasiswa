@@ -270,6 +270,17 @@
 
         <div class="d-flex justify-content-center">
             <div id="inputanMultiline" >
+                <div id="opsiKirimNotifikasi" class="d-flex justify-content-end">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" :value="true" v-model="this.isKirimNotifikasi" id="flexCheckChecked" checked>
+                        <label class="form-check-label" for="flexCheckChecked">
+                          Kirim notifikasi ke peserta ?
+                        </label>
+                        <v-tooltip activator="parent" width="300" content-class="bg-grey-darken-1" location="bottom"> Sistem akan memberikan notifikasi ke peserta berupa isi dari catatan perwalian saat ini.
+                        </v-tooltip>
+                      </div>
+                </div>
+
                 <div id="kolomInputan" class="d-flex justify-content-center">
                     <textarea name="agendaPerwalian" id="agendaPerwalian" cols="160" rows="10" placeholder="Tulis agenda perwalian di sini" v-model="agendaPerwalian"></textarea>
                 </div>
@@ -326,6 +337,7 @@ export default {
             tahunAngkatan: null, //temp
             waktuAwal: null,
             waktuAkhir: null,
+            isKirimNotifikasi : false,
 
             //variabel untuk DOMS
             textNama: "Nama",
@@ -333,14 +345,14 @@ export default {
             inputanNama: "Nama",
             inputanPeserta: null,
             myPlaceholder: "Masukan nama atau NIM mahasiswa",
-            listMahasiswa: [
-                new MahasiswaLain("Immanuel Sindu Kristian Pratama", "71190426"),
-                new MahasiswaLain("Christan Farel Pamungkas", "71190422"),
-                new MahasiswaLain("Harris Kurniadi Sumbogo", "71190434"),
-                new MahasiswaLain("Yonathan", "71190413"),
-                new MahasiswaLain("Garbiel Immaanuel Tumakaka", "71190427"),
-                new MahasiswaLain("Revyn Pradana Putra", "71190420"),
-            ],
+            // listMahasiswa: [
+            //     new MahasiswaLain("Immanuel Sindu Kristian Pratama", "71190426"),
+            //     new MahasiswaLain("Christan Farel Pamungkas", "71190422"),
+            //     new MahasiswaLain("Harris Kurniadi Sumbogo", "71190434"),
+            //     new MahasiswaLain("Yonathan", "71190413"),
+            //     new MahasiswaLain("Garbiel Immaanuel Tumakaka", "71190427"),
+            //     new MahasiswaLain("Revyn Pradana Putra", "71190420"),
+            // ],
             listMahasiswaPesertaLainnya: [],
             /////////////////////////////////////////////////////////////////////////////
             tombolTidakAktif: false,
@@ -406,7 +418,7 @@ export default {
             }
         },
         addPesertaKeWadahPesertaLainnya(mahasiswa) {
-            console.log(mahasiswa.nim);
+            // console.log(mahasiswa.nim);
             let checkExists = this.isMahasiswaExits(mahasiswa.nim)
 
             switch (checkExists) {
@@ -603,6 +615,51 @@ export default {
                             }
                         }
 
+                        // kirim notifikasi ke peserta (mahasiswa YBS)
+                        if(this.isKirimNotifikasi == true){
+                            // get kode semester mahasiswa YBS
+                            let kodeSemesterMahasiswa = ""
+                            try {
+                                const response = await axios.get(process.env.VUE_APP_API_DATAWAREHOUSE + `/getKodeSemesterMhs/`, {
+                                    params: {
+                                        nim: this.nimMahasiswa,
+                                    },
+                                });
+                            
+                                if (response.data.error === false) {
+                                    kodeSemesterMahasiswa = response.data.response[0].kode_semester;
+                                    console.log(kodeSemesterMahasiswa);
+                                } else {
+                                    kodeSemesterMahasiswa = null;
+                                }
+                            } catch (error) {
+                                console.error("Terjadi kesalahan saat mengambil data:", error);
+                                kodeSemesterMahasiswa = null;
+                            }
+
+                            // kirim catatan ke peserta YBS (terkait)
+                            try {
+                                const paramObjectKirim =  {
+                                        nama_mahasiswa: this.namaMahasiswa,
+                                        nim: this.nimMahasiswa,
+                                        semester: null, // sementara null 
+                                        kode_semester: kodeSemesterMahasiswa,
+                                        judul: this.judul,
+                                        pembahasan: this.agendaPerwalian,
+                                        file: []
+                                    }
+                                
+                                const response = await axios.post(`${process.env.VUE_APP_API_PERWALIAN}/dosen/${process.env.VUE_APP_UID_FIREBASE}/new-log`, paramObjectKirim);
+
+                                // console.log(paramObjectKirim);
+                                // console.log(response);
+
+                            } catch (error) {
+                                console.error("Terjadi kesalahan saat menambah data:", error);
+                                console.log(response.message);
+                            }
+                        }
+                       
                         this.pesanSnackBar = "Berhasil menambahkan catatan"
                         this.snackbar()
 
@@ -613,7 +670,6 @@ export default {
                     } else {
                         this.pesanSnackBar = "Gagal menambahkan data"
                         this.snackbar()
-
                         console.error("Data gagal ditambahkan ", error);
                     }
 
@@ -639,12 +695,11 @@ export default {
         },
         async searchNamaMahasiswa() {
             try {
-                const response = await axios.get(process.env.VUE_APP_API_DATAWAREHOUSE + `/searchMahasiswa/`, {
-                    params: {
-                        kode_dosen: this.kodeDosen,
-                        inputan: this.inputanCariNama.toLowerCase()
-                    },
-                });
+                const response = await axios.post(process.env.VUE_APP_API_OPERASIONAL + `/tambahCatatanPerwalianDosen/`, tempParamObject);
+                if (response.data.success) {
+                    //menambahkan id_catatan_perwalian_dosen dari catatan yang baru saja dibuat
+                    this.wadahPesertaLainnya[i].id_catatan_perwalian_dosen = response.data.id_catatan_perwalian_dosen
+                }
 
                 if (response.data.error === false) {
                     this.listCariMahasiswa = response.data.response.list_mahasiswa;
@@ -703,26 +758,26 @@ export default {
         document.head.appendChild(script3);
     },
     computed: {
-        filteredList() {
-            if (this.inputanPeserta != '') {
-                return this.listMahasiswa.filter(Mahasiswa => {
-                    return Mahasiswa.nim.toLowerCase().includes(this.inputanPeserta.toLowerCase())
-                })
-            }
-            return []
-        },
-        filteredListCariNamaPeserta2() {
-            if (this.nama != '') {
-                return this.listMahasiswa.filter(Mahasiswa => {
-                    const lowerCaseNama = Mahasiswa.nama.toLowerCase();
-                    const lowerCaseNIM = Mahasiswa.nim.toLowerCase();
-                    const lowerCaseInput = this.nama.toLowerCase();
+        // filteredList() {
+        //     if (this.inputanPeserta != '') {
+        //         return this.listMahasiswa.filter(Mahasiswa => {
+        //             return Mahasiswa.nim.toLowerCase().includes(this.inputanPeserta.toLowerCase())
+        //         })
+        //     }
+        //     return []
+        // },
+        // filteredListCariNamaPeserta2() {
+        //     if (this.nama != '') {
+        //         return this.listMahasiswa.filter(Mahasiswa => {
+        //             const lowerCaseNama = Mahasiswa.nama.toLowerCase();
+        //             const lowerCaseNIM = Mahasiswa.nim.toLowerCase();
+        //             const lowerCaseInput = this.nama.toLowerCase();
 
-                    return lowerCaseNama.includes(lowerCaseInput) || lowerCaseNIM.includes(lowerCaseInput);
-                });
-            }
-            return [];
-        },
+        //             return lowerCaseNama.includes(lowerCaseInput) || lowerCaseNIM.includes(lowerCaseInput);
+        //         });
+        //     }
+        //     return [];
+        // },
         handlingInputCariNama() {
             if (!this.inputanCariNama.includes("/") && this.listCariMahasiswa.length == 0 && this.inputanCariNama != '') {
                 return true

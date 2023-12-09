@@ -815,7 +815,7 @@ export default {
         },
         async getCekalMahasiswa() {
             //get cekal mahasiswa 
-            await axios.get(process.env.VUE_APP_API_OPERASIONAL + `/cekalMahasiswa/`, {
+            await axios.get(process.env.VUE_APP_API_DATAWAREHOUSE + `/cekalMahasiswa/`, {
                 params: {
                     nim: this.$route.params.id
                 },

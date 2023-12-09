@@ -1282,42 +1282,32 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     if (to.meta.requiresAuth) {
-        console.log("masuk a");
 
         let aksesLogin = store.getters.getAksesLogin
-        console.log(aksesLogin);
+
 
         if (!(aksesLogin)) { // jika akses = false
-            console.log("masuk b");
             next("/login")
 
             // jika tidak ada akses maka dosen harus login dulu
             store.commit("setIsDiplayShouldLogin", true)
 
         } else { // jika akses = true
-            console.log("masuk c");
-            console.log("akses di c ", aksesLogin);
             if (to.name === "TambahCatatanPerwalian" || to.name === "TambahCatatanMahasiswa" || to.name === "TambahCatatanAngkatan" || to.name === "TambahCatatanDosen") {
-                console.log("masuk d");
                 if (to.params.canBack === "1") {
-                    console.log("masuk e");
                     next();
                 } else {
                     next('/PageNotFound');
                 }
             } else {
-                console.log("masuk f");
                 if (aksesLogin == false) {
-                    console.log("masuk f1");
                     next("/login")
                 } else {
-                    console.log("masuk f2");
                     next();
                 }
             }
         }
     } else if (to.meta.guest) {
-        console.log("masuk g");
     }
     next()
 });

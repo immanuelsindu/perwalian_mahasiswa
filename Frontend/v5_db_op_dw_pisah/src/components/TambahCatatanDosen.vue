@@ -179,6 +179,22 @@
 
         <div class="d-flex justify-content-center">
             <div id="inputanMultiline">
+
+                <transition>
+                    <div v-if="this.tipe == 'khusus'" id="opsiKirimNotifikasi" class="d-flex justify-content-end">
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" :value="true" v-model="this.isKirimNotifikasi" id="flexCheckChecked" checked>
+                            <label class="form-check-label" for="flexCheckChecked">
+                              Kirim notifikasi ke peserta ?
+                            </label>
+                            <v-tooltip activator="parent" width="300" content-class="bg-grey-darken-1" location="bottom"> Sistem akan memberikan notifikasi ke peserta berupa isi dari catatan perwalian saat ini.
+                            </v-tooltip>
+                          </div>
+                    </div>
+                </transition>
+               
+
+
                 <div id="kolomInputan" class="d-flex justify-content-center">
                     <textarea name="agendaPerwalian" id="agendaPerwalian" cols="160" rows="10" placeholder="Tulis agenda perwalian di sini" v-model="agendaPerwalian"></textarea>
                 </div>
@@ -237,7 +253,8 @@ export default {
             tipe: "refleksi-dosen",
             listCariMahasiswa: [],
             labelKolomNama: "",
-            namaDosen: localStorage.getItem("namaDosen")
+            namaDosen: localStorage.getItem("namaDosen"),
+            isKirimNotifikasi : false
 
         }
     },
@@ -316,6 +333,55 @@ export default {
                 try {
                     const response = await axios.post(process.env.VUE_APP_API_OPERASIONAL + `/tambahCatatanDosen/`, paramObject);
                     if (response.data.success) {
+
+                        // kirim notifikasi ke peserta khusus
+                        if(this.tipe = "khusus"){
+                            if(this.isKirimNotifikasi == true && this.tipe != 'grup-angkatan'){
+                            // get kode semester mahasiswa YBS
+                            let kodeSemesterMahasiswa = ""
+                            try {
+                                const response = await axios.get(process.env.VUE_APP_API_DATAWAREHOUSE + `/getKodeSemesterMhs/`, {
+                                    params: {
+                                        nim: this.nimMahasiswa,
+                                    },
+                                });
+                            
+                                if (response.data.error === false) {
+                                    kodeSemesterMahasiswa= response.data.response[0].kode_semester;
+                                    console.log(kodeSemesterMahasiswa);
+                                } else {
+                                    kodeSemesterMahasiswa= null;
+                                }
+                            } catch (error) {
+                                console.error("Terjadi kesalahan saat mengambil data:", error);
+                                kodeSemesterMahasiswa= null;
+                            }
+
+                            // kirim catatan ke peserta YBS (terkait)
+                            try {
+                                const paramObjectKirim =  {
+                                        nama_mahasiswa: this.nama,
+                                        nim: this.nim,
+                                        semester: null, // sementara null 
+                                        kode_semester: kodeSemesterMahasiswa,
+                                        judul: this.judul,
+                                        pembahasan: this.agendaPerwalian,
+                                        file: []
+                                    }
+                                
+                                const response = await axios.post(`${process.env.VUE_APP_API_PERWALIAN}/dosen/${process.env.VUE_APP_UID_FIREBASE}/new-log`, paramObjectKirim);
+
+                                // console.log(paramObjectKirim);
+                                // console.log(response);
+
+                            } catch (error) {
+                                console.error("Terjadi kesalahan saat menambah data:", error);
+                                console.log(response.message);
+                            }
+                        }
+                        }
+
+
                         this.pesanSnackBar = "Berhasil menambahkan catatan"
                         this.snackbar()
 
