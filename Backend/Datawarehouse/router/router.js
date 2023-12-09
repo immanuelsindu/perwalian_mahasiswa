@@ -19,6 +19,10 @@ const {
 
     getIPKPerTahunAngkatan,
     getListMahasiswaAngkatanByTahun,
+
+    getCekalMahasiswa,
+
+    getKodeSemesterMahasiswa
 } = require("../controller/perwalian");
 
 router.get("/angkatanMahasiswaPerwalian", getAngkatanMahasiswaPerwalianDosen); //list tahun angkatan mahasiswa perwalian
@@ -33,8 +37,10 @@ router.get("/searchMahasiswa", getNamaNimMahasiswa); // get list nim nama mahasi
 router.get("/searchMahasiswaKhusus", getNamaNimMahasiswaKhusus); // get list catatan mahasiswa untuk catatan dosen tipe khusus
 router.get("/rataIPKAngkatanPerTahun", getIPKPerTahunAngkatan); // get list catatan mahasiswa arsip filtered
 router.get("/mahasiswaPerwalianFiltered", getMahasiswaAngkatanFiltered); // get list catatan mahasiswa arsip filtered
-router.get("/mahasiswaPerwalianPerTahun", getListMahasiswaAngkatanByTahun); // get list catatan mahasiswa by tahun
-router.get("/getKRSMahasiswa", getKRSMahasiswa); // set opsi item beranda
-
+router.get("/mahasiswaPerwalianPerTahun", getListMahasiswaAngkatanByTahun); // get list  mahasiswa by tahun
+router.get("/getKRSMahasiswa", getKRSMahasiswa); // get krs mahasiswa
+router.get("/cekalMahasiswa", getCekalMahasiswa); // cekal mahasiswa by nim
+// api baru
+router.get("/getKodeSemesterMhs", getKodeSemesterMahasiswa); // get kode semester mahasiswa terbaru
 module.exports = router;
 

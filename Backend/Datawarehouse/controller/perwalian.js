@@ -364,9 +364,54 @@ const getNamaNimMahasiswa = async (req, res) => {
     }
 };
 
+const getKodeSemesterMahasiswa = async (req, res) => {
+    const { nim } = req.query;
+
+    try {
+        let resdb = await pool.query(
+            `select distinct(kode_semester) from krs where nim = '${nim}' order by kode_semester desc limit 1`
+        );
+
+        if (resdb.rows.length) {
+            return res.send({
+                error: false,
+                message: "berhasil",
+                response: resdb.rows,
+            });
+        } else {
+            return customError("Data tidak ada atau gagal diambil!", 404, res);
+        }
+    } catch (error) {
+        return customError(error.message, 500, res);
+    }
+};
+
+const getCekalMahasiswa = async (req, res) => {
+    const { nim } = req.query;
+
+    try {
+        const resdb = await pool.query(
+            `select bc.id_cekal, c.jenis, c.deskripsi from cekal c join bridge_cekal bc on c.id_cekal = bc.id_cekal where bc.nim = '${nim}'`
+        );
+
+        if (resdb.rows.length) {
+            return res.send({
+                error: false,
+                message: "berhasil",
+                response: {
+                    nim: nim,
+                    cekal: resdb.rows,
+                },
+            });
+        } else {
+            return customError("Data gagal diambil!", 404, res);
+        }
+    } catch (error) {
+        return customError(error.message, 500, res);
+    }
+};
+
 module.exports = {
-
-
     getMahasiswaAngkatanFiltered,
 
     getNamaNimMahasiswaKhusus,
@@ -386,6 +431,12 @@ module.exports = {
 
     getIPKPerTahunAngkatan,
     getListMahasiswaAngkatanByTahun,
+
+    getCekalMahasiswa,
+
+    // api baru setelah revisi 
+    getKodeSemesterMahasiswa
+
 
 
 };

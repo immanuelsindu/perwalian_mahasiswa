@@ -322,18 +322,19 @@
             <div class="d-flex justify-content-center">
                 <div id="inputanMultiline" >
 
-                    <div id="opsiKirimNotifikasi" class="d-flex justify-content-end">
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" :value="true" v-model="this.isKirimNotifikasi" id="flexCheckChecked" checked>
-                            <label class="form-check-label" for="flexCheckChecked">
-                              Kirim notifikasi ke peserta ?
-                            </label>
-                            <v-tooltip activator="parent" width="300" content-class="bg-grey-darken-1" location="bottom"> Sistem akan memberikan notifikasi ke peserta berupa isi dari catatan perwalian saat ini.
-                            </v-tooltip>
-                          </div>
-                    </div>
-
-
+                    <transition>
+                        <div v-if="this.tipe != 'grup-angkatan'"  id="opsiKirimNotifikasi" class="d-flex justify-content-end">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" :value="true" v-model="this.isKirimNotifikasi" id="flexCheckChecked" checked>
+                                <label class="form-check-label" for="flexCheckChecked">
+                                  Kirim notifikasi ke peserta ?
+                                </label>
+                                <v-tooltip activator="parent" width="300" content-class="bg-grey-darken-1" location="bottom"> Sistem akan memberikan notifikasi ke peserta berupa isi dari catatan perwalian saat ini.
+                                </v-tooltip>
+                              </div>
+                        </div>
+                    </transition>
+                    
                     <div id="kolomInputan" class="d-flex justify-content-center">
                         <textarea name="agendaPerwalian" id="agendaPerwalian" cols="160" rows="10" placeholder="Tulis agenda perwalian di sini" v-model="agendaPerwalian"></textarea>
                     </div>
