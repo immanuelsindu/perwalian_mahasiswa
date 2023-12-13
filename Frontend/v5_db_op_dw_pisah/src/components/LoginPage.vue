@@ -56,12 +56,17 @@
 
 <script>
 import axios from 'axios'
+import firebase from 'firebase'
+import Cookies from 'js-cookie';
+// import { getAuth, signInWithCustomToken } from "firebase/auth";
+
 export default {
     name: "LoginPage",
     data() {
         return {
             username: '',
             password: '',
+            namaDosen : '',
             pesanSnackBar: '',
         }
     },
@@ -90,12 +95,111 @@ export default {
         script.defer = true;
         document.head.appendChild(script);
 
-        this.isShouldLogin()
+        this.cekLogin()
+        
     },
     created() {
         this.scrollTop()
     },
     methods: {
+        cekToken(){
+            // mengambil token dari url param
+            // const currentURL = window.location.href;
+            // const url = new URL(currentURL);
+            // const uid = url.searchParams.get('uid');
+            // console.log(uid);
+            // // simpan ke storage , karena value di url param hilang jika halaman di reload
+            // localStorage.setItem('firebase-uid', uid)
+
+            // firebase.auth().onAuthStateChanged((user) => {
+            //     console.log(user );
+            // });
+
+            // getAuth()
+            //     .getUser(uid)
+            //     .then((userRecord) => {
+            //         // See the UserRecord reference doc for the contents of userRecord.
+            //         console.log(`Successfully fetched user data: ${userRecord.toJSON()}`);
+            //     })
+            //     .catch((error) => {
+            //         console.log('Error fetching user data:', error);
+            //     });
+
+
+            // Mendapatkan informasi pengguna berdasarkan UID
+            // firebase.auth().getUser(uid)
+            // .then((userRecord) => {
+            //     // Informasi pengguna
+            //     console.log('Informasi Pengguna:', userRecord.toJSON());
+            // })
+            // .catch((error) => {
+            //     console.error('Error:', error);
+            // });
+            // firebase.auth().onAuthStateChanged((user) => {
+            // if (user) {
+            //     // User logged in already or has just logged in.
+            //     console.log(user.uid);
+            // } else {
+            //     // User not logged in or has just logged out.
+            // }
+            // });
+
+
+        },
+        async cekLogin(){
+            try {
+                // cek cookies
+                let tempAuthObject = Cookies.get('authObject');
+                this.authObject = JSON.parse(tempAuthObject)
+                // jika cookies tidak kosong
+                if(this.authObject != null){ 
+                    // true jika merupakan email ti, staff, fti (karena website dibuat untuk dosen ti)
+                    if(this.cekEmail((this.authObject.email).toString())){ 
+                        // misal "sindu@ti.ukdw.ac.id" jadi "sindu"
+                        this.namaDosen = this.emailToName(this.authObject.email)
+                        console.log(this.namaDosen);
+                        try {
+                            const response = await axios.get(process.env.VUE_APP_API_OPERASIONAL + `/cekLoginDosen/`, {
+                                    params: {
+                                        username: this.namaDosen
+                                    },
+                                });
+
+                                if (response.data.error === false) {
+                                    localStorage.setItem('kodeDosen', response.data.response[0].kode_dosen)
+                                    localStorage.setItem('namaDosen', response.data.response[0].nama)
+
+                                    //memberikan sesi login ke dosen wali                    
+                                    this.$store.commit("setAksesLogin", true)
+                                    
+                                    // simpan ke local storage 
+                                    localStorage.setItem('authObject', this.authObject)
+
+                                    // jika login berhasil pindah ke halaman beranda
+                                    this.$router.push({ name: 'Beranda' })
+                                }else{
+                                    // jika gagal arahkan kembali ke login srm
+                                    window.location.href = `http://localhost:9070/login`;
+                                }
+                        } catch (error) {
+                            this.pesanSnackBar = "Akun pengguna tidak ditemukan"
+                            this.snackbar()
+                        }
+                    }else{
+                        console.log("masuk a");
+                        // jika email selain ti, staff, fti
+                        window.location.href = `http://localhost:9070/login`;
+                    }
+                }else{
+                    console.log("masuk b");
+                    // jika cookies kosong
+                    window.location.href = `http://localhost:9070/login`;
+                }
+            } catch (error) {
+                console.log(error.message);
+            }
+            
+        },
         scrollTop() {
             window.scrollTo({
                 top: 0,
@@ -134,12 +238,12 @@ export default {
                 this.snackbar()
             }
         },
-        isShouldLogin(){
-            if(this.$store.getters.getIsShouldDisplayLogin){
-                this.pesanSnackBar = "Silahkan login terlebih dahulu untuk melanjutkan"
-                this.snackbar()
-            }
-        },
+        // isShouldLogin(){
+        //     if(this.$store.getters.getIsShouldDisplayLogin){
+        //         this.pesanSnackBar = "Silahkan login terlebih dahulu untuk melanjutkan"
+        //         this.snackbar()
+        //     }
+        // },
         snackbar() {
             var x = document.getElementById("snackbar");
             x.className = "show";
@@ -147,6 +251,27 @@ export default {
                 x.className = x.className.replace("show", "");
             }, 3000);
         },
+        emailToName(email){
+            // Menghilangkan karakter non-alfanumerik dan mengonversi ke huruf kecil
+            let username = email.split('@')[0]; // misal sindu@ti.ukdw.ac.id
+            username = username.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+            return username; // misal sindu
+        }, 
+        cekEmail(email){ // true jika email selain @si.ukdw.ac.id
+            const email_ti = /@ti\.ukdw\.ac\.id$/;
+            const email_staff = /@staff\.ukdw\.ac\.id$/;
+            const email_fti = /@fti\.ukdw\.ac\.id$/;
+
+            if(email_ti.test(email)){
+                return true
+            }else if( email_staff.test(email)){
+                return true
+            }else if(email_fti.test(email)){
+                return true
+            }else{
+                return false // berarti bukan email ti, staff, fti
+            }
+        }
     },
     
 }

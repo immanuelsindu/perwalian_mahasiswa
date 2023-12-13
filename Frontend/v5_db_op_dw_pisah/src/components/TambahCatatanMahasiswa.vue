@@ -628,7 +628,7 @@ export default {
                             
                                 if (response.data.error === false) {
                                     kodeSemesterMahasiswa = response.data.response[0].kode_semester;
-                                    console.log(kodeSemesterMahasiswa);
+                                    // console.log(kodeSemesterMahasiswa);
                                 } else {
                                     kodeSemesterMahasiswa = null;
                                 }
@@ -640,7 +640,7 @@ export default {
                             // kirim catatan ke peserta YBS (terkait)
                             try {
                                 const paramObjectKirim =  {
-                                        nama_mahasiswa: this.namaMahasiswa,
+                                        nama_mahasiswa: this.namaMahasiswa.toUpperCase(),
                                         nim: this.nimMahasiswa,
                                         semester: null, // sementara null 
                                         kode_semester: kodeSemesterMahasiswa,
@@ -652,7 +652,7 @@ export default {
                                 const response = await axios.post(`${process.env.VUE_APP_API_PERWALIAN}/dosen/${process.env.VUE_APP_UID_FIREBASE}/new-log`, paramObjectKirim);
 
                                 // console.log(paramObjectKirim);
-                                // console.log(response);
+                                console.log(response);
 
                             } catch (error) {
                                 console.error("Terjadi kesalahan saat menambah data:", error);

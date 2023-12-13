@@ -48,7 +48,8 @@ const routes = [
         component: LoginPage,
         meta: {
             guest: true,
-        }
+        },
+
     },
     {
         path: "/",
@@ -1282,13 +1283,9 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     if (to.meta.requiresAuth) {
-
         let aksesLogin = store.getters.getAksesLogin
-
-
         if (!(aksesLogin)) { // jika akses = false
             next("/login")
-
             // jika tidak ada akses maka dosen harus login dulu
             store.commit("setIsDiplayShouldLogin", true)
 

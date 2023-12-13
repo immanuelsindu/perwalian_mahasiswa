@@ -724,7 +724,7 @@ export default {
                             // kirim catatan ke peserta YBS (terkait)
                             try {
                                 const paramObjectKirim =  {
-                                        nama_mahasiswa: this.namaMahasiswa,
+                                        nama_mahasiswa: this.namaMahasiswa.toUpperCase(),
                                         nim: this.nimMahasiswa,
                                         semester: null, // sementara null 
                                         kode_semester: kodeSemesterMahasiswa,
