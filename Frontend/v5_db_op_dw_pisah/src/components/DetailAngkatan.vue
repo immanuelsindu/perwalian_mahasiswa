@@ -46,7 +46,7 @@
                                 <v-icon size="default">
                                     mdi-logout
                                 </v-icon>
-                                <v-tooltip activator="parent" content-class="bg-grey-darken-1" location="bottom">Logout
+                                <v-tooltip activator="parent" content-class="bg-grey-darken-1" location="bottom">Kembali ke SRM
                                 </v-tooltip>
                             </v-btn>
                         </div>
@@ -658,7 +658,8 @@ export default {
         },
         logoutDosen() {
             localStorage.clear();
-            this.$router.push("/login")
+            this.$store.commit("setAksesLogin", false)
+            window.location.href = `http://localhost:9070/listmenu`;
         },
         scrollTo(tujuan) {
             let element = ""

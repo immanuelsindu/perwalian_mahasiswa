@@ -29,17 +29,11 @@ const store = createStore({
             }
         },
         setAksesLogin(state, aksesLogin) {
-            // if (aksesLogin == false) {
-            //     Cookies.set('auth', null); // kalau false dibuat null (ketika user logout dari website perwalian)
-            // } else {
-            //     Cookies.set('auth', aksesLogin);
-            // }
-
             Cookies.set('auth', aksesLogin);
         },
-        setIsDiplayShouldLogin(state, shouldLogin) {
-            Cookies.set("isDisplayShouldLogin", shouldLogin)
-        }
+        // setIsDiplayShouldLogin(state, shouldLogin) {
+        //     Cookies.set("isDisplayShouldLogin", shouldLogin)
+        // }
     },
     getters: {
         // untuk get breadcrumb dinamis
@@ -62,20 +56,20 @@ const store = createStore({
             }
             return state.aksesLogin
         },
-        getIsShouldDisplayLogin(state) {
-            let isShouldLogin = Cookies.get("isDisplayShouldLogin")
-            switch (isShouldLogin) {
-                case 'false':
-                    state.isShouldLogin = false
-                    break;
-                case 'true':
-                    state.isShouldLogin = true
-                    break;
-                default:
-                    break
-            }
-            return state.isShouldLogin
-        }
+        // getIsShouldDisplayLogin(state) {
+        //     let isShouldLogin = Cookies.get("isDisplayShouldLogin")
+        //     switch (isShouldLogin) {
+        //         case 'false':
+        //             state.isShouldLogin = false
+        //             break;
+        //         case 'true':
+        //             state.isShouldLogin = true
+        //             break;
+        //         default:
+        //             break
+        //     }
+        //     return state.isShouldLogin
+        // }
 
     },
 });

@@ -102,109 +102,59 @@ export default {
         this.scrollTop()
     },
     methods: {
-        cekToken(){
-            // mengambil token dari url param
-            // const currentURL = window.location.href;
-            // const url = new URL(currentURL);
-            // const uid = url.searchParams.get('uid');
-            // console.log(uid);
-            // // simpan ke storage , karena value di url param hilang jika halaman di reload
-            // localStorage.setItem('firebase-uid', uid)
-
-            // firebase.auth().onAuthStateChanged((user) => {
-            //     console.log(user );
-            // });
-
-            // getAuth()
-            //     .getUser(uid)
-            //     .then((userRecord) => {
-            //         // See the UserRecord reference doc for the contents of userRecord.
-            //         console.log(`Successfully fetched user data: ${userRecord.toJSON()}`);
-            //     })
-            //     .catch((error) => {
-            //         console.log('Error fetching user data:', error);
-            //     });
-
-
-            // Mendapatkan informasi pengguna berdasarkan UID
-            // firebase.auth().getUser(uid)
-            // .then((userRecord) => {
-            //     // Informasi pengguna
-            //     console.log('Informasi Pengguna:', userRecord.toJSON());
-            // })
-            // .catch((error) => {
-            //     console.error('Error:', error);
-            // });
-            // firebase.auth().onAuthStateChanged((user) => {
-            // if (user) {
-            //     // User logged in already or has just logged in.
-            //     console.log(user.uid);
-            // } else {
-            //     // User not logged in or has just logged out.
-            // }
-            // });
-
-
-        },
         async cekLogin(){
             try {
-                // cek cookies
-                if(this.$store.getters.getAksesLogin == null){ // jika null berarti login pertama kali dari srm
-                    let tempAuthObject = Cookies.get('authObject');
-                    this.authObject = JSON.parse(tempAuthObject)
-                    // jika cookies tidak kosong
-                    if(this.authObject != null){ 
-                        // true jika merupakan email ti, staff, fti (karena website dibuat untuk dosen ti)
-                        if(this.cekEmail((this.authObject.email).toString())){ 
-                            // misal "sindu@ti.ukdw.ac.id" jadi "sindu"
-                            this.namaDosen = this.emailToName(this.authObject.email)
-                            console.log(this.namaDosen);
-                            try {
-                                const response = await axios.get(process.env.VUE_APP_API_OPERASIONAL + `/cekLoginDosen/`, {
-                                        params: {
-                                            username: this.namaDosen
-                                        },
-                                    });
+                let tempAuthObject = Cookies.get('authObject');
+                this.authObject = JSON.parse(tempAuthObject)
+                console.log(this.authObject);
 
-                                    if (response.data.error === false) {
-                                        localStorage.setItem('kodeDosen', response.data.response[0].kode_dosen)
-                                        localStorage.setItem('namaDosen', response.data.response[0].nama)
+                if(this.authObject != null){ 
+                    // true jika merupakan email ti, staff, fti (karena website dibuat untuk dosen ti)
+                    if(this.cekEmail((this.authObject.email).toString())){ 
+                        // misal "sindu@ti.ukdw.ac.id" jadi "sindu"
+                        this.namaDosen = this.emailToName(this.authObject.email)
+                        console.log(this.namaDosen);
+                        try {
+                            const response = await axios.get(process.env.VUE_APP_API_OPERASIONAL + `/cekLoginDosen/`, {
+                                params: {
+                                    username: this.namaDosen
+                                },
+                            });
 
-                                        //memberikan sesi login ke dosen wali                    
-                                        this.$store.commit("setAksesLogin", true)
-                                        
-                                        // simpan ke local storage 
-                                        localStorage.setItem('authObject', this.authObject)
+                            if (response.data.error === false) {
+                                console.log("masuk sini");
+                                localStorage.setItem('kodeDosen', response.data.response[0].kode_dosen)
+                                localStorage.setItem('namaDosen', response.data.response[0].nama)
 
-                                        // jika login berhasil pindah ke halaman beranda
-                                        this.$router.push({ name: 'Beranda' })
-                                    }else{
-                                        // jika gagal arahkan kembali ke login srm
-                                        window.location.href = `http://localhost:9070/login`;
-                                    }
-                            } catch (error) {
-                                this.pesanSnackBar = "Akun pengguna tidak ditemukan"
-                                this.snackbar()
+                                // // simpan ke local storage 
+                                // localStorage.setItem('authObject', this.authObject)
+
+                                //memberikan sesi login ke dosen wali                    
+                                this.$store.commit("setAksesLogin", true)
+
+                                // jika login berhasil pindah ke halaman beranda
+                                this.$router.push({ name: 'Beranda' })
+                            }else{
+                                // jika gagal arahkan kembali ke login srm
+                                window.location.href = `http://localhost:9070/login`;
                             }
-                        }else{
-                            // jika email selain ti, staff, fti
-                            console.log("masuk a");
-                            window.location.href = `http://localhost:9070/login`;
+                        } catch (error) {
+                            this.pesanSnackBar = "Akun pengguna tidak ditemukan"
+                            this.snackbar()
+                            // window.location.href = `http://localhost:9070/login`;
                         }
                     }else{
-                        // jika cookies kosong
-                        console.log("masuk b");
+                        // jika email selain ti, staff, fti
                         window.location.href = `http://localhost:9070/login`;
                     }
-                }else if(!this.$store.getters.getAksesLogin){ // kalau false berarti tidak boleh login
-                     // jika akses login == false
-                     console.log("masuk c");
-                     window.location.href = `http://localhost:9070/login`;
+                }else{
+                    // jika cookies kosong
+                    window.location.href = `http://localhost:9070/login`;
                 }
             } catch (error) {
                 console.log(error.message);
+                window.location.href = `http://localhost:9070/login`;
             }
-            
         },
         scrollTop() {
             window.scrollTo({
@@ -226,10 +176,10 @@ export default {
                         localStorage.setItem('kodeDosen', response.data.response[0].kode_dosen)
                         localStorage.setItem('namaDosen', response.data.response[0].nama)
 
-                        //memberikan sesi login ke dosen wali                    
-                        this.$store.commit("setAksesLogin", true)
-                        // ubah nilai isDisplayShouldLogin
-                        this.$store.commit("setIsDiplayShouldLogin", false)
+                        // //memberikan sesi login ke dosen wali                    
+                        // this.$store.commit("setAksesLogin", true)
+                        // // ubah nilai isDisplayShouldLogin
+                        // this.$store.commit("setIsDiplayShouldLogin", false)
 
 
                         this.$router.push({ name: 'Beranda' })
@@ -244,12 +194,6 @@ export default {
                 this.snackbar()
             }
         },
-        // isShouldLogin(){
-        //     if(this.$store.getters.getIsShouldDisplayLogin){
-        //         this.pesanSnackBar = "Silahkan login terlebih dahulu untuk melanjutkan"
-        //         this.snackbar()
-        //     }
-        // },
         snackbar() {
             var x = document.getElementById("snackbar");
             x.className = "show";

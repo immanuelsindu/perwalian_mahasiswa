@@ -47,7 +47,7 @@
                                 <v-icon size="default">
                                     mdi-logout
                                 </v-icon>
-                                <v-tooltip activator="parent" content-class="bg-grey-darken-1" location="bottom">Logout
+                                <v-tooltip activator="parent" content-class="bg-grey-darken-1" location="bottom">Kembali ke SRM
                                 </v-tooltip>
                             </v-btn>
                         </div>
