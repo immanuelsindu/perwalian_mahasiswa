@@ -29,6 +29,12 @@ const store = createStore({
             }
         },
         setAksesLogin(state, aksesLogin) {
+            // if (aksesLogin == false) {
+            //     Cookies.set('auth', null); // kalau false dibuat null (ketika user logout dari website perwalian)
+            // } else {
+            //     Cookies.set('auth', aksesLogin);
+            // }
+
             Cookies.set('auth', aksesLogin);
         },
         setIsDiplayShouldLogin(state, shouldLogin) {
@@ -42,6 +48,7 @@ const store = createStore({
         },
         getAksesLogin(state) {
             let authData = Cookies.get("auth")
+            console.log("ini auth data" + authData);
             switch (authData) {
                 case 'false':
                     state.aksesLogin = false
@@ -49,8 +56,9 @@ const store = createStore({
                 case 'true':
                     state.aksesLogin = true
                     break;
-                default:
-                    break
+                case undefined:
+                    state.aksesLogin = null
+                    break;
             }
             return state.aksesLogin
         },

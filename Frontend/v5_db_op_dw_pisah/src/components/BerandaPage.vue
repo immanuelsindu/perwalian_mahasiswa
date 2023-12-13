@@ -1900,7 +1900,7 @@ export default {
         logoutDosen() {
             localStorage.clear();
             this.$store.commit("setAksesLogin", false)
-            this.$router.push("/login")
+            window.location.href = `http://localhost:9070/listmenu`;
         }
     },
 };

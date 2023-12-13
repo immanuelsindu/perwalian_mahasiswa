@@ -149,51 +149,57 @@ export default {
         async cekLogin(){
             try {
                 // cek cookies
-                let tempAuthObject = Cookies.get('authObject');
-                this.authObject = JSON.parse(tempAuthObject)
-                // jika cookies tidak kosong
-                if(this.authObject != null){ 
-                    // true jika merupakan email ti, staff, fti (karena website dibuat untuk dosen ti)
-                    if(this.cekEmail((this.authObject.email).toString())){ 
-                        // misal "sindu@ti.ukdw.ac.id" jadi "sindu"
-                        this.namaDosen = this.emailToName(this.authObject.email)
-                        console.log(this.namaDosen);
-                        try {
-                            const response = await axios.get(process.env.VUE_APP_API_OPERASIONAL + `/cekLoginDosen/`, {
-                                    params: {
-                                        username: this.namaDosen
-                                    },
-                                });
+                if(this.$store.getters.getAksesLogin == null){ // jika null berarti login pertama kali dari srm
+                    let tempAuthObject = Cookies.get('authObject');
+                    this.authObject = JSON.parse(tempAuthObject)
+                    // jika cookies tidak kosong
+                    if(this.authObject != null){ 
+                        // true jika merupakan email ti, staff, fti (karena website dibuat untuk dosen ti)
+                        if(this.cekEmail((this.authObject.email).toString())){ 
+                            // misal "sindu@ti.ukdw.ac.id" jadi "sindu"
+                            this.namaDosen = this.emailToName(this.authObject.email)
+                            console.log(this.namaDosen);
+                            try {
+                                const response = await axios.get(process.env.VUE_APP_API_OPERASIONAL + `/cekLoginDosen/`, {
+                                        params: {
+                                            username: this.namaDosen
+                                        },
+                                    });
 
-                                if (response.data.error === false) {
-                                    localStorage.setItem('kodeDosen', response.data.response[0].kode_dosen)
-                                    localStorage.setItem('namaDosen', response.data.response[0].nama)
+                                    if (response.data.error === false) {
+                                        localStorage.setItem('kodeDosen', response.data.response[0].kode_dosen)
+                                        localStorage.setItem('namaDosen', response.data.response[0].nama)
 
-                                    //memberikan sesi login ke dosen wali                    
-                                    this.$store.commit("setAksesLogin", true)
-                                    
-                                    // simpan ke local storage 
-                                    localStorage.setItem('authObject', this.authObject)
+                                        //memberikan sesi login ke dosen wali                    
+                                        this.$store.commit("setAksesLogin", true)
+                                        
+                                        // simpan ke local storage 
+                                        localStorage.setItem('authObject', this.authObject)
 
-                                    // jika login berhasil pindah ke halaman beranda
-                                    this.$router.push({ name: 'Beranda' })
-                                }else{
-                                    // jika gagal arahkan kembali ke login srm
-                                    window.location.href = `http://localhost:9070/login`;
-                                }
-                        } catch (error) {
-                            this.pesanSnackBar = "Akun pengguna tidak ditemukan"
-                            this.snackbar()
+                                        // jika login berhasil pindah ke halaman beranda
+                                        this.$router.push({ name: 'Beranda' })
+                                    }else{
+                                        // jika gagal arahkan kembali ke login srm
+                                        window.location.href = `http://localhost:9070/login`;
+                                    }
+                            } catch (error) {
+                                this.pesanSnackBar = "Akun pengguna tidak ditemukan"
+                                this.snackbar()
+                            }
+                        }else{
+                            // jika email selain ti, staff, fti
+                            console.log("masuk a");
+                            window.location.href = `http://localhost:9070/login`;
                         }
                     }else{
-                        console.log("masuk a");
-                        // jika email selain ti, staff, fti
+                        // jika cookies kosong
+                        console.log("masuk b");
                         window.location.href = `http://localhost:9070/login`;
                     }
-                }else{
-                    console.log("masuk b");
-                    // jika cookies kosong
-                    window.location.href = `http://localhost:9070/login`;
+                }else if(!this.$store.getters.getAksesLogin){ // kalau false berarti tidak boleh login
+                     // jika akses login == false
+                     console.log("masuk c");
+                     window.location.href = `http://localhost:9070/login`;
                 }
             } catch (error) {
                 console.log(error.message);
