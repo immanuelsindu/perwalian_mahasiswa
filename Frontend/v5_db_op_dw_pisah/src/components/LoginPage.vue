@@ -68,6 +68,7 @@ export default {
             password: '',
             namaDosen : '',
             pesanSnackBar: '',
+            userRecordFirebase : '',
         }
     },
     head: {
@@ -104,16 +105,38 @@ export default {
     methods: {
         async cekLogin(){
             try {
-                let tempAuthObject = Cookies.get('authObject');
-                this.authObject = JSON.parse(tempAuthObject)
-                console.log(this.authObject);
+                //cek uid_firebase
+                // Mendapatkan token dari query url
+                const token = this.$route.query.token
 
-                if(this.authObject != null){ 
+                try {
+                    const response = await axios.get(process.env.VUE_APP_API_OPERASIONAL + `/getUserEmailFirebase/`, {
+                        params: {
+                            uid_firebase: token,
+                        },
+                    });
+                
+                    if (response.data.error === false) {
+                        this.userRecordFirebase = response.data.response;
+                        console.log(this.userRecordFirebase);
+                    } else {
+                        this.userRecordFirebase = null;
+                    }
+                } catch (error) {
+                    console.error("Terjadi kesalahan saat mengambil data:", error);
+                    this.userRecordFirebase = null;
+                }
+
+                if(this.userRecordFirebase != null){ 
                     // true jika merupakan email ti, staff, fti (karena website dibuat untuk dosen ti)
-                    if(this.cekEmail((this.authObject.email).toString())){ 
+                    if(this.cekEmail((this.userRecordFirebase.email).toString())){ 
                         // misal "sindu@ti.ukdw.ac.id" jadi "sindu"
-                        this.namaDosen = this.emailToName(this.authObject.email)
-                        console.log(this.namaDosen);
+                        this.namaDosen = this.emailToName(this.userRecordFirebase.email)
+                        localStorage.setItem("emailDosen",this.userRecordFirebase.email)
+                        localStorage.setItem("expTime",this.userRecordFirebase.tokensValidAfterTime)
+                        console.log(this.userRecordFirebase.tokensValidAfterTime);
+
+
                         try {
                             const response = await axios.get(process.env.VUE_APP_API_OPERASIONAL + `/cekLoginDosen/`, {
                                 params: {
@@ -122,12 +145,8 @@ export default {
                             });
 
                             if (response.data.error === false) {
-                                console.log("masuk sini");
                                 localStorage.setItem('kodeDosen', response.data.response[0].kode_dosen)
                                 localStorage.setItem('namaDosen', response.data.response[0].nama)
-
-                                // // simpan ke local storage 
-                                // localStorage.setItem('authObject', this.authObject)
 
                                 //memberikan sesi login ke dosen wali                    
                                 this.$store.commit("setAksesLogin", true)
@@ -137,23 +156,28 @@ export default {
                             }else{
                                 // jika gagal arahkan kembali ke login srm
                                 window.location.href = `http://localhost:9070/login`;
+                                console.log("masuk sini a");
                             }
                         } catch (error) {
                             this.pesanSnackBar = "Akun pengguna tidak ditemukan"
                             this.snackbar()
-                            // window.location.href = `http://localhost:9070/login`;
+                            window.location.href = `http://localhost:9070/login`;
+                            console.log("masuk sini b");
                         }
                     }else{
                         // jika email selain ti, staff, fti
                         window.location.href = `http://localhost:9070/login`;
+                        console.log("masuk sini c");
                     }
                 }else{
                     // jika cookies kosong
                     window.location.href = `http://localhost:9070/login`;
+                    console.log("masuk sini d");
                 }
             } catch (error) {
                 console.log(error.message);
                 window.location.href = `http://localhost:9070/login`;
+                console.log("masuk sini d");
             }
         },
         scrollTop() {

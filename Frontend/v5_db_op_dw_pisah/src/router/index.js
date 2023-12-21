@@ -1281,8 +1281,30 @@ const router = createRouter({
     routes,
 });
 
+function logout() {
+    localStorage.clear();
+    this.$store.commit("setAksesLogin", false)
+    window.location.href = `http://localhost:9070/listmenu`;
+}
+
 router.beforeEach((to, from, next) => {
     if (to.meta.requiresAuth) {
+        // cek session pengguna dari firebase expiration token time
+        let expTime = localStorage.getItem("expTime") // in milisecond
+        expTime = new Date(expTime).getTime()
+
+        if (expTime) {
+            let timeNowInMilis = new Date().getTime()
+            let timeRemaining = timeNowInMilis - expTime
+
+            // batas waktu 
+            // kalau exp time di bawah 5 menit maka auto logout , minta user login lagi
+            const refreshThreshold = 5 * 60 * 1000
+            if (timeRemaining < refreshThreshold) {
+                logout()
+            }
+        }
+
         let aksesLogin = store.getters.getAksesLogin
         if (!(aksesLogin)) { // jika akses = false
             next("/login")

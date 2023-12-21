@@ -188,7 +188,7 @@
 
                     <div id="infoDosen" class="mt-3">
                         <p id="namaDosen" class="px-2">{{ this.namaDosen }}</p>
-                        <p>email.dosen@ti.ukdw.ac.id</p>
+                        <p>{{this.emailDosen}}</p>
                         <div class="garis mt-3 text-muted"></div>
 
                         <div class="d-flex flex-column">
@@ -1068,7 +1068,8 @@ export default {
                 'AN': 'AN',
                 'LS': 'Lulus'
             }, 
-            isKaprodi : false
+            isKaprodi : false, 
+            emailDosen : localStorage.getItem("emailDosen")
 
         }
     },
