@@ -1287,23 +1287,24 @@ function logout() {
     window.location.href = `http://localhost:9070/listmenu`;
 }
 
+function cekSession(expTime) {
+    if (expTime) {
+        let timeNowInMilis = new Date().getTime()
+        let timeRemaining = timeNowInMilis - expTime
+
+        // batas waktu 
+        // kalau exp time di bawah 5 menit maka auto logout , minta user login lagi
+        const refreshThreshold = 5 * 60 * 1000
+        if (timeRemaining < refreshThreshold) {
+            return true // true jika session kurang dari 5 menit
+        } else {
+            return false
+        }
+    }
+}
+
 router.beforeEach((to, from, next) => {
     if (to.meta.requiresAuth) {
-        // cek session pengguna dari firebase expiration token time
-        let expTime = localStorage.getItem("expTime") // in milisecond
-        expTime = new Date(expTime).getTime()
-
-        if (expTime) {
-            let timeNowInMilis = new Date().getTime()
-            let timeRemaining = timeNowInMilis - expTime
-
-            // batas waktu 
-            // kalau exp time di bawah 5 menit maka auto logout , minta user login lagi
-            const refreshThreshold = 5 * 60 * 1000
-            if (timeRemaining < refreshThreshold) {
-                logout()
-            }
-        }
 
         let aksesLogin = store.getters.getAksesLogin
         if (!(aksesLogin)) { // jika akses = false
@@ -1312,9 +1313,17 @@ router.beforeEach((to, from, next) => {
             store.commit("setIsDiplayShouldLogin", true)
 
         } else { // jika akses = true
+            // cek session pengguna dari firebase expiration token time
+            let expTime = localStorage.getItem("expTime") // in milisecond
+            expTime = new Date(expTime).getTime()
+
             if (to.name === "TambahCatatanPerwalian" || to.name === "TambahCatatanMahasiswa" || to.name === "TambahCatatanAngkatan" || to.name === "TambahCatatanDosen") {
                 if (to.params.canBack === "1") {
-                    next();
+                    if (!cekSession(expTime)) {
+                        next();
+                    } else {
+                        logout()
+                    }
                 } else {
                     next('/PageNotFound');
                 }
@@ -1322,7 +1331,11 @@ router.beforeEach((to, from, next) => {
                 if (aksesLogin == false) {
                     next("/login")
                 } else {
-                    next();
+                    if (!cekSession(expTime)) {
+                        next();
+                    } else {
+                        logout()
+                    }
                 }
             }
         }
