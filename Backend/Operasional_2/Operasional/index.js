@@ -2,6 +2,12 @@ const express = require("express");
 const router = require("./router/router");
 const bodyParser = require("body-parser");
 
+
+
+
+
+
+
 const app = express();
 var cors = require("cors");
 app.use(cors());

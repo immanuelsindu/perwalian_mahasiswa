@@ -1,6 +1,12 @@
 const { Pool } = require("pg");
 const customError = require("../utils/error");
 
+const admin = require('firebase-admin');
+const serviceAccount = require('../admin.json'); // Sesuaikan dengan path file konfigurasi Anda
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+});
+
 const pool = new Pool({
     host: "localhost",
     port: 5432,
@@ -1030,6 +1036,46 @@ const loginDosen2 = async (req, res) => {
     }
 };
 
+//TODO: Operasional
+const cekLoginDosen = async (req, res) => {
+    const { username } = req.query;
+
+    try {
+        const resdb = await pool.query(
+            `select ld.kode_dosen as kode_dosen, d.nama_gelar as nama from login_dosen ld join dosen d on ld.kode_dosen = d.kode_dosen  where ld.username like '%${username}%'`
+        );
+
+        if ((resdb.rows.length = 1)) {
+            return res.send({
+                error: false,
+                message: "berhasil",
+                response: resdb.rows,
+            });
+        } else {
+            return customError("Data gagal diambil!", 404, res);
+        }
+    } catch (error) {
+        return customError(error.message, 500, res);
+    }
+};
+
+//TODO: Operasional
+const getEmailFromFirebase = async (req, res) => {
+    const { uid_firebase } = req.query;
+
+    try {
+
+        const userRecord = await admin.auth().getUser(uid_firebase);
+        return res.send({
+            error: false,
+            message: "berhasil",
+            response: userRecord,
+        });
+    } catch (error) {
+        return customError(error.message, 500, res);
+    }
+};
+
 module.exports = {
     loginDosen,
     getCatatanPerwalianDosenTerbaru, insertCatatanPerwalianDosen,
@@ -1068,5 +1114,8 @@ module.exports = {
 
 
     /// api baru
-    loginDosen2
+    loginDosen2,
+    cekLoginDosen,
+
+    getEmailFromFirebase
 };

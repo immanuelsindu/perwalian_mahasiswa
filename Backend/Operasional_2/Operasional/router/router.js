@@ -36,9 +36,15 @@ const {
     setOpsiUrutanDetailAngkatan,
 
     //// api baru 
-    loginDosen2
+    loginDosen2,
+    cekLoginDosen,
+    getEmailFromFirebase
 
 } = require("../controller/perwalian");
+
+const {
+    auth
+} = require("../controller/auth");
 
 router.get("/loginDosen", loginDosen); //list tahun angkatan mahasiswa perwalian
 router.get("/catatanPerwalianDosenTerbaru", getCatatanPerwalianDosenTerbaru); // get catatan perwalian dosen
@@ -76,8 +82,11 @@ router.get("/getOpsiDetailAngkatan", getOpsiUrutanDetailAngkatan); // get opsi i
 router.put("/setOpsiDetailAngkatan", setOpsiUrutanDetailAngkatan); // set opsi item beranda
 
 
-/// API Baru 
+// /// API Baru 
+// router.post("/api/auth", auth); //list tahun angkatan mahasiswa perwalian
 router.get("/loginDosen2", loginDosen2); //list tahun angkatan mahasiswa perwalian
+router.get("/cekLoginDosen", cekLoginDosen); //cek apakah dosen punya akun login menggunakan email dari firebase
+router.get("/getUserEmailFirebase", getEmailFromFirebase); //list tahun angkatan mahasiswa perwalian
 
 
 module.exports = router;
