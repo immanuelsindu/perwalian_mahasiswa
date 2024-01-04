@@ -141,6 +141,21 @@
 
             <div class="d-flex justify-content-center">
                 <div id="inputanMultiline" >
+
+                    <transition>
+                        <div  id="opsiKirimNotifikasi" class="d-flex justify-content-end">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" :value="true" v-model="this.isKirimNotifikasi" id="flexCheckChecked" checked>
+                                <label class="form-check-label" for="flexCheckChecked">
+                                  Kirim notifikasi ke peserta ?
+                                </label>
+                                <v-tooltip activator="parent" width="300" content-class="bg-grey-darken-1" location="bottom"> Sistem akan memberikan notifikasi ke peserta berupa isi dari catatan perwalian saat ini.
+                                </v-tooltip>
+                              </div>
+                        </div>
+                    </transition>
+
+
                     <div id="kolomInputan" class="d-flex justify-content-center">
                         <textarea name="agendaPerwalian" id="agendaPerwalian" cols="160" rows="10" placeholder="Tulis agenda perwalian di sini" v-model="agendaPerwalian"></textarea>
                     </div>
@@ -250,7 +265,8 @@ export default {
             listPresensi: [],
             pesanSnackBar: [],
             judul: null,
-            namaDosen: localStorage.getItem("namaDosen")
+            namaDosen: localStorage.getItem("namaDosen"),
+            isKirimNotifikasi : false, 
         }
     },
     created() {
@@ -356,6 +372,30 @@ export default {
                     console.error("Terjadi kesalahan saat menambah data:", error);
                     this.pesanSnackBar = "Gagal menambahkan data"
                     this.snackbar()
+                }
+
+                // kirim pengumuman ke grup angkatan
+                if(this.isKirimNotifikasi){
+                    // kirim catatan ke grup angkatan tertentu misal 2015
+                        try {
+                            const paramObjectKirim =  {
+                                kode_semester: null, 
+                                judul: this.judul,
+                                angkatan: this.tahunAngkatan,
+                                periode_akhir: null,
+                                pengumuman: this.agendaPerwalian,
+                                file: []
+                            }
+
+                            const response = await axios.post(`${process.env.VUE_APP_API_PERWALIAN}/dosen/${process.env.VUE_APP_UID_FIREBASE}/new-pengumuman`, paramObjectKirim);
+
+                            console.log(paramObjectKirim);
+                            console.log(response);
+
+                        } catch (error) {
+                            console.error("Terjadi kesalahan saat menambah data:", error);
+                            console.log(response.message);
+                        }
                 }
             } else {
                 this.pesanSnackBar = "Pastikan semua kolom sudah terisi"

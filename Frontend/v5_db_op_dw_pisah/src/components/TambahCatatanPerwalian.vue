@@ -323,7 +323,7 @@
                 <div id="inputanMultiline" >
 
                     <transition>
-                        <div v-if="this.tipe != 'grup-angkatan'"  id="opsiKirimNotifikasi" class="d-flex justify-content-end">
+                        <div  id="opsiKirimNotifikasi" class="d-flex justify-content-end">
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" :value="true" v-model="this.isKirimNotifikasi" id="flexCheckChecked" checked>
                                 <label class="form-check-label" for="flexCheckChecked">
@@ -631,8 +631,6 @@ export default {
                     tahun_angkatan: this.tahunAngkatan,
                 }
 
-                // console.log(paramObject);
-
                 //insert catatan baru mahasiswa peserta lainnya
                 if (this.wadahPesertaLainnya.length > 0) {
                     for (let i = 0; i < this.wadahPesertaLainnya.length; i++) {
@@ -735,8 +733,31 @@ export default {
                                 
                                 const response = await axios.post(`${process.env.VUE_APP_API_PERWALIAN}/dosen/${process.env.VUE_APP_UID_FIREBASE}/new-log`, paramObjectKirim);
 
-                                // console.log(paramObjectKirim);
-                                // console.log(response);
+                                console.log(paramObjectKirim);
+                                console.log(response);
+
+                            } catch (error) {
+                                console.error("Terjadi kesalahan saat menambah data:", error);
+                                console.log(response.message);
+                            }
+                        }
+                        
+                        else if(this.isKirimNotifikasi == true && this.tipe == 'grup-angkatan'){
+                            // kirim catatan ke grup angkatan tertentu misal 2015
+                            try {
+                                const paramObjectKirim =  {
+                                    kode_semester: null, 
+                                    judul: this.judul,
+                                    angkatan: this.tahunAngkatan,
+                                    periode_akhir: null,
+                                    pengumuman: this.agendaPerwalian,
+                                    file: []
+                                }
+
+                                const response = await axios.post(`${process.env.VUE_APP_API_PERWALIAN}/dosen/${process.env.VUE_APP_UID_FIREBASE}/new-pengumuman`, paramObjectKirim);
+
+                                console.log(paramObjectKirim);
+                                console.log(response);
 
                             } catch (error) {
                                 console.error("Terjadi kesalahan saat menambah data:", error);

@@ -31,9 +31,6 @@ const store = createStore({
         setAksesLogin(state, aksesLogin) {
             Cookies.set('auth', aksesLogin);
         },
-        // setIsDiplayShouldLogin(state, shouldLogin) {
-        //     Cookies.set("isDisplayShouldLogin", shouldLogin)
-        // }
     },
     getters: {
         // untuk get breadcrumb dinamis
@@ -42,7 +39,6 @@ const store = createStore({
         },
         getAksesLogin(state) {
             let authData = Cookies.get("auth")
-            console.log("ini auth data" + authData);
             switch (authData) {
                 case 'false':
                     state.aksesLogin = false
