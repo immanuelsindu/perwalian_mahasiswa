@@ -628,30 +628,52 @@ export default {
           if (response.data.success) {
             //update tambah_peserta di catatan mahasiswa bersangkutan (jika ada peserta baru di this.listMahasiswaPesertaLainnya)
             if (isIdNol) {
-              for (
-                let i = 0;
-                i < this.listMahasiswaPesertaLainnya.length;
-                i++
-              ) {
-                try {
-                  let paramObject = {
-                    tambah_peserta: this.listMahasiswaPesertaLainnya,
-                    id_catatan_perwalian_dosen:
-                      this.listMahasiswaPesertaLainnya[i]
-                        .id_catatan_perwalian_dosen,
-                  };
-                  await axios.put(
-                    process.env.VUE_APP_API_OPERASIONAL + `/updateTambahPesertaCatatan/`,
-                    paramObject
-                  );
-                } catch (error) {
-                  console.error(
-                    "Terjadi kesalahan saat mengambil data:",
-                    error
-                  );
-                }
-              }
-            }
+				// mengecek apakah mahasiswa YBS sudah menjadi head
+				let namaMahasiswaYBS = this.nama
+				var isYBSada = this.listMahasiswaPesertaLainnya.some(function (data) {
+					return data.nama === namaMahasiswaYBS;
+				});
+
+				let tempWadah = []
+				for (let i = 0; i < this.listMahasiswaPesertaLainnya.length; i++) {
+					tempWadah.push(this.listMahasiswaPesertaLainnya[i])
+				}
+
+				if(!isYBSada){
+					//melakukan tambah informasi id catatan YBS kedalam this.wadahPesertaLainnya
+					const objectMahasiswaYBS = {
+						nim: this.nim,
+						nama: this.nama,
+						id_catatan_perwalian_dosen: parseInt(this.$route.params.id),
+						is_head: true, //flag kalau mahasiswa YBS adalah mahasiswa yang ajak teman"nya perwalian bersama
+					}
+
+					// push objek mahasisw YBS ke indekx 0
+					tempWadah.unshift(objectMahasiswaYBS);
+				}
+
+				for (let i = 0; i < tempWadah.length; i++) {
+					try {
+						let paramObject = {
+							tambah_peserta: tempWadah,
+							id_catatan_perwalian_dosen: tempWadah[i].id_catatan_perwalian_dosen,
+						};
+
+						console.log(paramObject);
+
+						await axios.put(
+							process.env.VUE_APP_API_OPERASIONAL +
+							`/updateTambahPesertaCatatan/`,
+							paramObject
+						);
+					} catch (error) {
+						console.error(
+							"Terjadi kesalahan saat mengambil data:",
+							error
+						);
+					}
+				}
+			}
 
             this.pesanSnackBar = "Berhasil memperbarui catatan";
             this.snackbar();

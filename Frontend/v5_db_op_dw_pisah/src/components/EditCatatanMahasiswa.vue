@@ -519,33 +519,17 @@ export default {
 
                 //update catatan daftar peserta lain
                 if (this.listMahasiswaPesertaLainnya.length > 0) {
-                    for (
-                        let i = 0; i < this.listMahasiswaPesertaLainnya.length; i++
-                    ) {
+                    for (let i = 0; i < this.listMahasiswaPesertaLainnya.length; i++) {
                         // mengecek jika di list ada nama mahasiswa YBS, di skip saja
-                        if (
-                            this.listMahasiswaPesertaLainnya[i].nim != this.nim
-                        ) {
-                            if (
-                                this.listMahasiswaPesertaLainnya[
-                                    i
-                                ].hasOwnProperty(
-                                    "id_catatan_perwalian_dosen"
-                                ) &&
-                                this.listMahasiswaPesertaLainnya[i]
-                                .id_catatan_perwalian_dosen != 0
-                            ) {
+                        if (this.listMahasiswaPesertaLainnya[i].nim != this.nim) {
+                            if (this.listMahasiswaPesertaLainnya[i].hasOwnProperty("id_catatan_perwalian_dosen") &&
+                                this.listMahasiswaPesertaLainnya[i].id_catatan_perwalian_dosen != 0) {
                                 //ubah id catatan ke id peserta lain dahulu
-                                const tempIdCatatan =
-                                    this.listMahasiswaPesertaLainnya[i]
-                                    .id_catatan_perwalian_dosen;
+                                const tempIdCatatan = this.listMahasiswaPesertaLainnya[i].id_catatan_perwalian_dosen;
                                 let tempParamObject = paramObject;
-                                tempParamObject.id_catatan_perwalian_dosen =
-                                    tempIdCatatan;
-                                tempParamObject.nim =
-                                    this.listMahasiswaPesertaLainnya[i].nim;
-                                tempParamObject.nama =
-                                    this.listMahasiswaPesertaLainnya[i].nama;
+                                tempParamObject.id_catatan_perwalian_dosen = tempIdCatatan;
+                                tempParamObject.nim = this.listMahasiswaPesertaLainnya[i].nim;
+                                tempParamObject.nama = this.listMahasiswaPesertaLainnya[i].nama;
 
                                 //update catatan peserta lain berdasarkan id catatannya
                                 try {
@@ -567,10 +551,8 @@ export default {
                                     kode_dosen: this.kodeDosen,
                                     judul: this.judul,
                                     tipe: "mahasiswa",
-                                    nim: this.listMahasiswaPesertaLainnya[i]
-                                        .nim,
-                                    nama: this.listMahasiswaPesertaLainnya[i]
-                                        .nama,
+                                    nim: this.listMahasiswaPesertaLainnya[i].nim,
+                                    nama: this.listMahasiswaPesertaLainnya[i].nama,
                                     nama_orang_tua: null, // nama orang tua mahasiswa memang kosong kalau tipe catatannya 'mahasiswa'
                                     agenda_perwalian: this.agendaPerwalian,
                                     tambah_peserta: [], // sementara kosong, setelah di /tambahCatatanPerwalianDosen diupdate lagi
@@ -621,15 +603,39 @@ export default {
                     if (response.data.success) {
                         //update tambah_peserta di catatan mahasiswa bersangkutan (jika ada peserta baru di this.listMahasiswaPesertaLainnya)
                         if (isIdNol) {
-                            for (
-                                let i = 0; i < this.listMahasiswaPesertaLainnya.length; i++
-                            ) {
+                            // mengecek apakah mahasiswa YBS sudah menjadi head
+                            let namaMahasiswaYBS = this.nama
+                            var isYBSada = this.listMahasiswaPesertaLainnya.some(function (data) {
+                                return data.nama === namaMahasiswaYBS;
+                            });
+
+                            let tempWadah = []
+                            for (let i = 0; i < this.listMahasiswaPesertaLainnya.length; i++) {
+                                tempWadah.push(this.listMahasiswaPesertaLainnya[i])
+                            }
+
+                            if(!isYBSada){
+                                //melakukan tambah informasi id catatan YBS kedalam this.wadahPesertaLainnya
+                                const objectMahasiswaYBS = {
+                                    nim: this.nim,
+                                    nama: this.nama,
+                                    id_catatan_perwalian_dosen: parseInt(this.$route.params.id),
+                                    is_head: true, //flag kalau mahasiswa YBS adalah mahasiswa yang ajak teman"nya perwalian bersama
+                                }
+
+                                // push objek mahasisw YBS ke indekx 0
+                                tempWadah.unshift(objectMahasiswaYBS);
+                            }
+
+                            for (let i = 0; i < tempWadah.length; i++) {
                                 try {
                                     let paramObject = {
-                                        tambah_peserta: this.listMahasiswaPesertaLainnya,
-                                        id_catatan_perwalian_dosen: this.listMahasiswaPesertaLainnya[i]
-                                            .id_catatan_perwalian_dosen,
+                                        tambah_peserta: tempWadah,
+                                        id_catatan_perwalian_dosen: tempWadah[i].id_catatan_perwalian_dosen,
                                     };
+
+                                    console.log(paramObject);
+
                                     await axios.put(
                                         process.env.VUE_APP_API_OPERASIONAL +
                                         `/updateTambahPesertaCatatan/`,
